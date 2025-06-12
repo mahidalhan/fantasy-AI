@@ -10,19 +10,26 @@
     "minify-js": "uglifyjs js/app.js js/api.js js/ui.js js/utils.js -o dist/app.min.js",
     "deploy": "npm run build && vercel --prod"
   },
-  "keywords": ["ai", "story", "image-generation", "interactive", "fantasy"],
+  "keywords": [
+    "ai",
+    "story",
+    "image-generation",
+    "interactive",
+    "fantasy"
+  ],
   "author": "Your Name",
   "license": "MIT",
   "dependencies": {
+    "@supabase/supabase-js": "^2.50.0",
     "axios": "^1.6.0"
   },
   "devDependencies": {
-    "live-server": "^1.2.2",
     "clean-css-cli": "^5.6.2",
+    "live-server": "^1.2.2",
     "uglify-js": "^3.17.4",
     "vercel": "^32.0.0"
   },
   "engines": {
     "node": ">=18.0.0"
   }
-} 
+}

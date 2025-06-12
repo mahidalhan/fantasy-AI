@@ -17,14 +17,13 @@ StoryCanvas is a single-page AI-powered fan fiction creation tool that generates
 - **No Frameworks**: Keep it simple, fast, and dependency-free
 
 ### **Backend/API**
-- **Vercel Functions** or **Netlify Functions**: Serverless API endpoints
-- **Google Gemini API**: Story generation, scene curation, image prompt optimization, image generation
-- **No Database**: Stateless, session-based storage only
+- **Supabase Edge Functions**: Secure serverless functions for API calls
+- **Gemini API**: AI story and image generation (called from Edge Functions)
+- **Deno Runtime**: TypeScript/JavaScript runtime for Edge Functions
 
 ### **Deployment**
-- **Static Hosting**: Vercel, Netlify, or any CDN
 - **Environment Variables**: API keys securely stored
-- **Edge Computing**: Functions deployed globally for speed
+- **Edge Computing**: supabase edge functions
 
 ---
 
@@ -40,19 +39,28 @@ storycanvas/
 │   └── animations.css         # Loading states and transitions
 ├── js/
 │   ├── app.js                 # Main application logic
-│   ├── api.js                 # API service layer
+│   ├── api.js                 # API service layer (calls Supabase Edge Functions)
 │   ├── ui.js                  # UI management and DOM manipulation
 │   └── utils.js               # Helper functions
-├── api/
-│   ├── generate-story-scenes.js    # Gemini story + scene generation
-│   ├── generate-image-prompt.js    # Hyperrealistic prompt creation
-│   └── generate-image.js           # Image generation endpoint
+├── supabase/
+│   ├── functions/
+│   │   ├── generate-story/
+│   │   │   └── index.ts       # Story + scene generation Edge Function
+│   │   ├── generate-image-prompt/
+│   │   │   └── index.ts       # Image prompt generation Edge Function
+│   │   ├── generate-image/
+│   │   │   └── index.ts       # Image generation Edge Function
+│   │   └── _shared/
+│   │       └── cors.ts        # Shared CORS configuration
+│   └── config.toml            # Supabase configuration
 ├── assets/
 │   ├── icons/                 # UI icons and logos
 │   └── placeholders/          # Loading and error state images
 ├── README.md                  # Setup and deployment instructions
 └── claude.md                  # This specification file
 ```
+
+**Note**: `/api` folder is deprecated - replaced by Supabase Edge Functions for security
 
 ### **Architecture Principles**
 - **Modular Design**: Separation of concerns across files
@@ -148,41 +156,44 @@ class SceneManager {
 }
 ```
 
-### **Backend API Functions**
+### **Supabase Edge Functions**
 
-#### **1. generate-story-scenes.js**
-```javascript
+#### **1. generate-story/index.ts**
+```typescript
 // Input: { prompt: string }
-// Output: { story: string, scenes: Array<{rank: number, scene: string}> }
+// Output: { success: boolean, data: { story: string, scenes: Array<{rank: number, scene_description: string, image_gen_prompt: string}> } }
 
-async function handler(request) {
-  const { prompt } = await request.json()
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { corsHeaders } from '../_shared/cors.ts'
+
+serve(async (req) => {
+  const { prompt } = await req.json()
   
-  const geminiPrompt = `
-    Create a fan fiction story and curate visual scenes:
-    
-    User Prompt: "${prompt}"
-    
-    Requirements:
-    1. Write exactly 400-500 words
-    2. Generate 10 distinct scenes ranked 1-10 (10 = most visually compelling)
-    3. Each scene: 2-3 sentences describing a specific visual moment
-    
-    Return JSON: { "story": "text", "scenes": [{"rank": 10, "scene": "text"}] }
-  `
+  const geminiPayload = {
+    contents: [...],
+    systemInstruction: {
+      parts: [{ text: "You are an expert creative writer..." }]
+    }
+  }
   
-  const response = await callGeminiAPI(geminiPrompt)
-  return response
-}
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+    { method: 'POST', body: JSON.stringify(geminiPayload) }
+  )
+  
+  return new Response(JSON.stringify({ success: true, data: parsedResponse }))
+})
 ```
 
-#### **2. generate-image-prompt.js**
-```javascript
+#### **2. generate-image-prompt/index.ts** (To Be Created)
+```typescript
 // Input: { story: string, scene: string, style: string }
-// Output: { prompt: string }
+// Output: { success: boolean, data: { prompt: string } }
 
-async function handler(request) {
-  const { story, scene, style } = await request.json()
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+
+serve(async (req) => {
+  const { story, scene, style } = await req.json()
   
   const geminiPrompt = `
     Create hyperrealistic image generation prompt:

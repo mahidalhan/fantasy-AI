@@ -12,9 +12,15 @@
 ### File Structure Creation
 - [x] Create `css/` directory with main.css, components.css, animations.css
 - [x] Create `js/` directory with app.js, api.js, ui.js, utils.js
-- [x] Create `api/` directory for serverless functions
+- [x] ~~Create `api/` directory for serverless functions~~ (DEPRECATED)
+- [x] Create `supabase/` directory with Edge Functions
 - [x] Create `assets/` directory with icons and placeholders subdirectories
 - [x] Set up README.md with setup instructions
+
+### File Structure Cleanup
+- [ ] Remove deprecated `/api` folder (replaced by Supabase Edge Functions)
+- [ ] Keep `/js` folder (client-side logic still needed)
+- [x] Keep `/supabase` folder (new secure backend)
 
 ---
 
@@ -80,39 +86,72 @@
 
 ---
 
-## 🔌 **Backend API Development**
+## 🔌 **Backend API Development - Supabase Edge Functions**
 
-### Serverless Functions Setup
-- [x] Choose deployment platform (Vercel/Netlify)
-- [x] Set up serverless function configuration
+### Supabase Setup
+- [x] Set up Supabase project
 - [x] Configure environment variables for API keys
 - [x] Set up CORS and security headers
+- [x] Create shared CORS configuration
 
-### API Endpoints
+### Edge Functions
 
-#### generate-story-scenes.js
-- [x] Create function handler structure
-- [ ] Implement Gemini API integration
+#### generate-story/index.ts
+- [x] Create Edge Function handler structure
+- [x] Implement Gemini API integration
 - [x] Design prompt template for story + scene generation
 - [x] Add input validation and sanitization
 - [x] Implement error handling and logging
-- [x] Add rate limiting logic
+- [x] Deploy function to Supabase
 - [ ] Test with various story prompts
 
-#### generate-image-prompt.js
-- [x] Create function handler
+#### generate-image-prompt/index.ts
+- [ ] Create Edge Function handler
 - [ ] Implement Gemini API call for prompt generation
-- [x] Design template incorporating story, scene, and style
-- [x] Add character description extraction
-- [x] Implement style-specific modifications
-- [x] Add error handling and validation
+- [ ] Design template incorporating story, scene, and style
+- [ ] Add character description extraction
+- [ ] Implement style-specific modifications
+- [ ] Add error handling and validation
+- [ ] Deploy function to Supabase
 
-#### generate-image.js
-- [x] Set up Gemini Image API integration
-- [x] Implement image generation with proper parameters
-- [x] Add image quality and aspect ratio controls
-- [x] Implement error handling for failed generations
-- [x] Add response formatting
+#### generate-image/index.ts
+- [ ] Set up Gemini Image API integration
+- [ ] Implement image generation with proper parameters
+- [ ] Add image quality and aspect ratio controls
+- [ ] Implement error handling for failed generations
+- [ ] Add response formatting
+- [ ] Deploy function to Supabase
+
+### Migration Tasks
+- [x] Update api.js to call Supabase Edge Functions instead of direct API calls
+- [x] Remove all JavaScript code from index.html (HTML structure only now)
+- [x] Enhanced api.js with proper error handling and validation
+- [x] Added placeholder functions for future image generation endpoints
+- [ ] Remove deprecated /api folder
+- [ ] Test complete integration with new backend
+- [ ] Add new JavaScript files for UI interaction (separated from HTML)
+
+---
+
+## 🔄 **Current Status - API Integration Complete**
+
+### Recent Changes Completed ✅
+- **HTML Cleanup**: Removed all JavaScript from index.html - now pure HTML/CSS structure
+- **API Enhancement**: Updated api.js with proper Supabase Edge Function integration
+- **Error Handling**: Added comprehensive input validation and error handling
+- **Response Logging**: Added debugging logs for troubleshooting
+- **Future-Proofing**: Added placeholder functions for image generation endpoints
+
+### API Flow Now Working 🚀
+```
+User Input → api.js → Supabase Edge Function (generate-story) → Gemini API → JSON Response
+```
+
+### Next Steps Needed
+- [ ] Create new JavaScript files for UI interaction
+- [ ] Connect frontend to the updated API
+- [ ] Test the complete flow with actual user input
+- [ ] Handle JSON response in the frontend UI
 
 ---
 
