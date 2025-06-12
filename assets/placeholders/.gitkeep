@@ -1,0 +1,8 @@
+# Placeholders Directory
+
+This directory will contain placeholder images for the application.
+
+Recommended placeholder images:
+- Loading placeholders for image generation
+- Default style preview images
+- Fallback images for failed generations 

@@ -1,0 +1,28 @@
+{
+  "name": "storycanvas-fantasy-ai",
+  "version": "1.0.0",
+  "description": "AI-powered interactive story and image generation platform",
+  "main": "index.html",
+  "scripts": {
+    "dev": "live-server --host=localhost --port=3000",
+    "build": "npm run minify-css && npm run minify-js",
+    "minify-css": "cleancss -o dist/style.min.css css/main.css css/components.css css/animations.css",
+    "minify-js": "uglifyjs js/app.js js/api.js js/ui.js js/utils.js -o dist/app.min.js",
+    "deploy": "npm run build && vercel --prod"
+  },
+  "keywords": ["ai", "story", "image-generation", "interactive", "fantasy"],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "clean-css-cli": "^5.6.2",
+    "uglify-js": "^3.17.4",
+    "vercel": "^32.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+} 

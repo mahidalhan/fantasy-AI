@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="StoryCanvas - AI-powered interactive story and image generation">
+    <meta name="keywords" content="AI, story generation, image generation, interactive fiction">
+    <title>StoryCanvas - AI Story & Image Generator</title>
+    
+    <!-- Preload Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <div id="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <h1 class="app-title">StoryCanvas</h1>
+            <p class="app-subtitle">Create AI-powered stories with stunning visuals</p>
+        </header>
+
+        <!-- Progress Indicator -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-text" id="progress-text">Ready to begin</div>
+        </div>
+
+        <!-- Section 1: Story Input -->
+        <section id="story-input-section" class="app-section active">
+            <div class="section-content">
+                <h2>Tell Your Story</h2>
+                <p>Describe the story you want to create. Be as detailed or as brief as you like.</p>
+                <div class="input-group">
+                    <textarea 
+                        id="story-prompt" 
+                        placeholder="Once upon a time in a magical kingdom..."
+                        rows="4"
+                        aria-label="Story prompt input"
+                    ></textarea>
+                    <button id="generate-story-btn" class="btn btn-primary">
+                        <span class="btn-text">Generate Story</span>
+                        <span class="btn-loading hidden">
+                            <span class="spinner"></span>
+                            Creating...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Story & Scene Selection -->
+        <section id="story-display-section" class="app-section hidden">
+            <div class="section-content">
+                <h2>Your Generated Story</h2>
+                <div class="story-container">
+                    <div id="story-text" class="story-text"></div>
+                    <button id="edit-story-btn" class="btn btn-secondary">Edit Story</button>
+                </div>
+                
+                <h3>Choose Your Favorite Scene</h3>
+                <div id="scenes-container" class="scenes-grid">
+                    <!-- Scene cards will be populated here -->
+                </div>
+                
+                <div class="section-actions">
+                    <button id="back-to-input-btn" class="btn btn-outline">Back</button>
+                    <button id="proceed-to-style-btn" class="btn btn-primary" disabled>Continue</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Style Selection -->
+        <section id="style-selection-section" class="app-section hidden">
+            <div class="section-content">
+                <h2>Choose Your Art Style</h2>
+                <div class="styles-grid">
+                    <div class="style-card" data-style="fantasy">
+                        <div class="style-preview fantasy-preview"></div>
+                        <h4>Fantasy</h4>
+                        <p>Magical, ethereal, with mystical elements</p>
+                    </div>
+                    <div class="style-card" data-style="cyberpunk">
+                        <div class="style-preview cyberpunk-preview"></div>
+                        <h4>Cyberpunk</h4>
+                        <p>Futuristic, neon-lit, high-tech aesthetic</p>
+                    </div>
+                    <div class="style-card" data-style="anime">
+                        <div class="style-preview anime-preview"></div>
+                        <h4>Anime</h4>
+                        <p>Japanese animation style with vibrant colors</p>
+                    </div>
+                    <div class="style-card" data-style="realistic">
+                        <div class="style-preview realistic-preview"></div>
+                        <h4>Photorealistic</h4>
+                        <p>Lifelike, detailed, cinematic quality</p>
+                    </div>
+                </div>
+                
+                <div class="section-actions">
+                    <button id="back-to-scenes-btn" class="btn btn-outline">Back</button>
+                    <button id="proceed-to-prompt-btn" class="btn btn-primary" disabled>Continue</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Image Prompt Review -->
+        <section id="prompt-review-section" class="app-section hidden">
+            <div class="section-content">
+                <h2>Review Image Prompt</h2>
+                <div class="prompt-container">
+                    <label for="image-prompt">Generated Image Prompt:</label>
+                    <textarea 
+                        id="image-prompt" 
+                        rows="6"
+                        aria-label="Image generation prompt"
+                    ></textarea>
+                    <button id="regenerate-prompt-btn" class="btn btn-secondary">
+                        Regenerate Prompt
+                    </button>
+                </div>
+                
+                <div class="section-actions">
+                    <button id="back-to-style-btn" class="btn btn-outline">Back</button>
+                    <button id="generate-image-btn" class="btn btn-primary">
+                        <span class="btn-text">Generate Image</span>
+                        <span class="btn-loading hidden">
+                            <span class="spinner"></span>
+                            Generating...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Final Result -->
+        <section id="result-section" class="app-section hidden">
+            <div class="section-content">
+                <h2>Your StoryCanvas Creation</h2>
+                <div class="result-container">
+                    <div class="result-image-container">
+                        <img id="generated-image" alt="Generated story illustration" />
+                    </div>
+                    <div class="result-story-container">
+                        <h3>Your Story</h3>
+                        <div id="final-story-text" class="final-story-text"></div>
+                    </div>
+                </div>
+                
+                <div class="section-actions">
+                    <button id="create-new-btn" class="btn btn-primary">Create New Story</button>
+                    <button id="regenerate-image-btn" class="btn btn-secondary">Regenerate Image</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Error Message Container -->
+        <div id="error-container" class="error-container hidden">
+            <div class="error-content">
+                <h3>Oops! Something went wrong</h3>
+                <p id="error-message"></p>
+                <button id="dismiss-error-btn" class="btn btn-outline">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html> 
