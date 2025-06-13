@@ -86,6 +86,9 @@ function handleGenerateCreativeScene() {
   if (scene) {
     appState.selectedScene = scene;
     updateSceneDisplay();
+    
+    // Record scene selection event
+    console.log('Creative scene generated and selected:', appState.currentSceneIndex + 1, scene);
   } else {
     appState.error = 'Please generate a story first';
     updateUI();
@@ -99,6 +102,9 @@ function handleNextScene() {
     appState.selectedScene = scene;
     appState.isEditingScene = false; // Exit edit mode when switching scenes
     updateSceneDisplay();
+    
+    // Record scene selection event
+    console.log('Scene selected:', appState.currentSceneIndex + 1, scene);
   }
 }
 
@@ -275,16 +281,16 @@ function updateUI() {
   }
 }
 
-// Handle "Use This Scene" button click
-function handleUseScene() {
+// Handle "Generate Image Prompt" button click
+function handleGenerateImagePrompt() {
   if (!appState.selectedScene) {
-    appState.error = 'No scene selected. Please select a scene first.';
+    appState.error = 'No scene selected. Please navigate through scenes using "Next Scene" button first.';
     updateUI();
     return;
   }
 
   // Extract the image generation prompt from the selected scene
-  const imagePrompt = appState.selectedScene.image_gen_prompt;
+  const imagePrompt = appState.selectedScene.image_gen_prompt || appState.selectedScene.scene_description || appState.selectedScene.text;
   
   if (!imagePrompt) {
     appState.error = 'No image prompt available for this scene.';
@@ -302,7 +308,7 @@ function handleUseScene() {
   appState.error = null;
   updateUI();
   
-  console.log('Image prompt generated:', imagePrompt);
+  console.log('Image prompt generated from selected scene:', imagePrompt);
 }
 
 // Update the image prompt display in Step 4
@@ -358,47 +364,224 @@ async function handleGenerateImage() {
   }
 }
 
-// Update the image generation UI
-function updateImageGenerationUI() {
-  const generateImageBtn = document.getElementById('generate-creative-image-btn');
-  const imageContainer = document.querySelector('.generated-image');
-  
-  if (!generateImageBtn || !imageContainer) {
-    console.error('Could not find image generation UI elements');
+// Handle "Regenerate Image" button click
+async function handleRegenerateImage() {
+  if (!appState.generatedImagePrompt) {
+    appState.error = 'No image prompt available. Please generate an image first.';
+    updateUI();
     return;
   }
 
-  // Handle loading state for image generation button
-  if (appState.isGeneratingImage) {
-    generateImageBtn.innerHTML = `
-      <span class="loading" style="display: inline-flex;">
-        <span class="spinner"></span>
-        Generating Image...
-      </span>
-    `;
-    generateImageBtn.disabled = true;
-  } else {
-    generateImageBtn.innerHTML = 'Generate Creative Image';
-    generateImageBtn.disabled = false;
+  // Update state to show image generation in progress
+  appState.isGeneratingImage = true;
+  appState.error = null;
+  updateImageGenerationUI();
+
+  try {
+    console.log('Regenerating image with prompt:', appState.generatedImagePrompt.substring(0, 100) + '...');
+    
+    // Call the image generation API
+    const response = await generateImage(appState.generatedImagePrompt);
+
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to regenerate image');
+    }
+
+    // Success! Store the newly generated image
+    appState.generatedImage = response.data;
+    console.log('Image regenerated successfully');
+    
+  } catch (err) {
+    console.error('Error regenerating image:', err);
+    appState.error = err.message;
+  } finally {
+    appState.isGeneratingImage = false;
+    updateImageGenerationUI();
+    updateUI();
+  }
+}
+
+// Update the image generation UI
+function updateImageGenerationUI() {
+  const creativeImageBtn = document.getElementById('creative-image-btn');
+  const imageLoadingDiv = document.getElementById('image-loading');
+  const imagePlaceholderDiv = document.getElementById('image-placeholder');
+  const imageDisplayDiv = document.getElementById('generated-image-display');
+  const imageErrorDiv = document.getElementById('image-error');
+  const masterpieceImg = document.getElementById('masterpiece-image');
+  
+  // Handle button state
+  if (creativeImageBtn) {
+    if (appState.isGeneratingImage) {
+      creativeImageBtn.innerHTML = `
+        <span class="loading-spinner"></span>
+        Your Creative Image is Coming...
+      `;
+      creativeImageBtn.disabled = true;
+    } else if (appState.generatedImage && appState.generatedImage.imageData) {
+      creativeImageBtn.innerHTML = `
+        <span class="btn-icon">🔄</span>
+        Regenerate Image
+      `;
+      creativeImageBtn.disabled = false;
+    } else {
+      creativeImageBtn.innerHTML = `
+        <span class="btn-icon">✨</span>
+        Generate Creative Image
+      `;
+      creativeImageBtn.disabled = false;
+    }
   }
 
-  // Handle image display
-  if (appState.generatedImage && appState.generatedImage.imageData) {
-    const imageUrl = `data:${appState.generatedImage.mimeType};base64,${appState.generatedImage.imageData}`;
-    imageContainer.innerHTML = `
-      <img src="${imageUrl}" alt="Generated Story Illustration" style="width: 100%; max-width: 512px; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
-    `;
-    console.log('Image displayed successfully');
-  } else if (!appState.isGeneratingImage) {
-    // Reset to placeholder when not generating
-    imageContainer.innerHTML = `
-      <div class="image-placeholder">
-        🎨 Your AI-generated illustration will appear here
-        <br><br>
-        <small style="opacity: 0.8;">High-resolution artwork based on your story and scene</small>
-      </div>
-    `;
+  // Handle display states
+  if (appState.isGeneratingImage) {
+    // Show loading state
+    if (imageLoadingDiv) imageLoadingDiv.style.display = 'flex';
+    if (imagePlaceholderDiv) imagePlaceholderDiv.style.display = 'none';
+    if (imageDisplayDiv) imageDisplayDiv.style.display = 'none';
+    if (imageErrorDiv) imageErrorDiv.style.display = 'none';
+    
+  } else if (appState.generatedImage && appState.generatedImage.imageData) {
+    // Show generated image
+    if (imageLoadingDiv) imageLoadingDiv.style.display = 'none';
+    if (imagePlaceholderDiv) imagePlaceholderDiv.style.display = 'none';
+    if (imageDisplayDiv) imageDisplayDiv.style.display = 'block';
+    if (imageErrorDiv) imageErrorDiv.style.display = 'none';
+    
+    // Set image source
+    if (masterpieceImg) {
+      const imageUrl = `data:${appState.generatedImage.mimeType || 'image/png'};base64,${appState.generatedImage.imageData}`;
+      masterpieceImg.src = imageUrl;
+      masterpieceImg.alt = 'AI-generated illustration based on your story';
+    }
+    
+  } else if (appState.error) {
+    // Show error state
+    if (imageLoadingDiv) imageLoadingDiv.style.display = 'none';
+    if (imagePlaceholderDiv) imagePlaceholderDiv.style.display = 'none';
+    if (imageDisplayDiv) imageDisplayDiv.style.display = 'none';
+    if (imageErrorDiv) imageErrorDiv.style.display = 'flex';
+    
+  } else {
+    // Show placeholder state
+    if (imageLoadingDiv) imageLoadingDiv.style.display = 'none';
+    if (imagePlaceholderDiv) imagePlaceholderDiv.style.display = 'flex';
+    if (imageDisplayDiv) imageDisplayDiv.style.display = 'none';
+    if (imageErrorDiv) imageErrorDiv.style.display = 'none';
   }
+}
+
+// Handle fullscreen image view
+function handleFullscreenImage() {
+  if (!appState.generatedImage || !appState.generatedImage.imageData) {
+    console.error('No image available for fullscreen');
+    return;
+  }
+
+  const imageUrl = `data:${appState.generatedImage.mimeType || 'image/png'};base64,${appState.generatedImage.imageData}`;
+  
+  // Create fullscreen overlay
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    cursor: pointer;
+  `;
+  
+  const img = document.createElement('img');
+  img.src = imageUrl;
+  img.style.cssText = `
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    border-radius: 8px;
+  `;
+  
+  overlay.appendChild(img);
+  document.body.appendChild(overlay);
+  
+  // Close on click
+  overlay.addEventListener('click', () => {
+    document.body.removeChild(overlay);
+  });
+  
+  console.log('Image opened in fullscreen');
+}
+
+// Handle image download
+function handleDownloadImage() {
+  if (!appState.generatedImage || !appState.generatedImage.imageData) {
+    console.error('No image available for download');
+    return;
+  }
+
+  const imageUrl = `data:${appState.generatedImage.mimeType || 'image/png'};base64,${appState.generatedImage.imageData}`;
+  
+  // Create download link
+  const link = document.createElement('a');
+  link.href = imageUrl;
+  link.download = `story-illustration-${Date.now()}.png`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  console.log('Image download initiated');
+}
+
+// Handle image sharing
+function handleShareImage() {
+  if (!appState.generatedImage || !appState.generatedImage.imageData) {
+    console.error('No image available for sharing');
+    return;
+  }
+
+  const imageUrl = `data:${appState.generatedImage.mimeType || 'image/png'};base64,${appState.generatedImage.imageData}`;
+  
+  // Try to use Web Share API if available
+  if (navigator.share) {
+    // Convert base64 to blob for sharing
+    fetch(imageUrl)
+      .then(res => res.blob())
+      .then(blob => {
+        const file = new File([blob], 'story-illustration.png', { type: 'image/png' });
+        return navigator.share({
+          title: 'My AI Story Illustration',
+          text: 'Check out this AI-generated illustration from my story!',
+          files: [file]
+        });
+      })
+      .then(() => console.log('Image shared successfully'))
+      .catch(err => {
+        console.error('Error sharing image:', err);
+        // Fallback to copy link
+        copyImageToClipboard(imageUrl);
+      });
+  } else {
+    // Fallback for browsers without Web Share API
+    copyImageToClipboard(imageUrl);
+  }
+}
+
+// Helper function to copy image to clipboard
+function copyImageToClipboard(imageUrl) {
+  // Copy the image data URL to clipboard
+  navigator.clipboard.writeText(imageUrl)
+    .then(() => {
+      alert('Image data copied to clipboard!');
+      console.log('Image data copied to clipboard');
+    })
+    .catch(err => {
+      console.error('Failed to copy image to clipboard:', err);
+      alert('Could not copy image. Please try right-clicking and saving the image.');
+    });
 }
 
 // Initialize the app when DOM is loaded
@@ -432,32 +615,59 @@ document.addEventListener('DOMContentLoaded', function() {
   const generateCreativeSceneBtn = document.getElementById('generate-creative-scene-btn');
   const nextSceneBtn = document.getElementById('next-scene-btn');
   const editSceneBtn = document.getElementById('edit-scene-btn');
-  const useSceneBtn = document.getElementById('use-scene-btn');
-  const generateImageBtn = document.getElementById('generate-creative-image-btn');
+  const generateImagePromptBtn = document.getElementById('generate-image-prompt-btn');
+  const creativeImageBtn = document.getElementById('creative-image-btn');
 
   if (generateCreativeSceneBtn) {
     generateCreativeSceneBtn.addEventListener('click', handleGenerateCreativeScene);
-    console.log('Generate Creative Scene button listener added');
   }
 
   if (nextSceneBtn) {
     nextSceneBtn.addEventListener('click', handleNextScene);
-    console.log('Next Scene button listener added');
   }
 
   if (editSceneBtn) {
     editSceneBtn.addEventListener('click', handleEditScene);
-    console.log('Edit Scene button listener added');
   }
 
-  if (useSceneBtn) {
-    useSceneBtn.addEventListener('click', handleUseScene);
-    console.log('Use Scene button listener added');
+  if (generateImagePromptBtn) {
+    generateImagePromptBtn.addEventListener('click', handleGenerateImagePrompt);
   }
 
-  if (generateImageBtn) {
-    generateImageBtn.addEventListener('click', handleGenerateImage);
-    console.log('Generate Image button listener added');
+  if (creativeImageBtn) {
+    creativeImageBtn.addEventListener('click', () => {
+      if (appState.generatedImage && appState.generatedImage.imageData) {
+        handleRegenerateImage();
+      } else {
+        handleGenerateImage();
+      }
+    });
+  }
+
+  // Add event listeners for image action buttons
+  const fullscreenBtn = document.getElementById('fullscreen-btn');
+  const downloadBtn = document.getElementById('download-btn');
+  const shareBtn = document.getElementById('share-btn');
+  const retryImageBtn = document.getElementById('retry-image-btn');
+
+  if (fullscreenBtn) {
+    fullscreenBtn.addEventListener('click', handleFullscreenImage);
+    console.log('Fullscreen button listener added');
+  }
+
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', handleDownloadImage);
+    console.log('Download button listener added');
+  }
+
+  if (shareBtn) {
+    shareBtn.addEventListener('click', handleShareImage);
+    console.log('Share button listener added');
+  }
+
+  if (retryImageBtn) {
+    retryImageBtn.addEventListener('click', handleRegenerateImage);
+    console.log('Retry image button listener added');
   }
 
   // Initial UI update

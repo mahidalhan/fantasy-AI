@@ -37,3 +37,38 @@
 2. Consolidate to the newer version
 3. Deploy the edge function
 4. Test end-to-end functionality 
+
+## Button Modifications Task List
+
+### Tasks to Complete:
+1. ✅ Create TODO.md with task breakdown
+2. ✅ Find and examine the index.html file structure
+3. ✅ Remove "Create New Story" button from HTML
+4. ✅ Remove "Try Different Scene" button from HTML  
+5. ✅ Update "Regenerate Image" button to connect to app.js handler
+6. ✅ Add regenerate image handler function in app.js (if needed)
+7. ✅ Test the functionality
+
+### Technical Details:
+- Remove two buttons: "Try Different Scene" and "Create New Story"
+- Keep "Regenerate Image" button and route it to app.js
+- Follow existing pattern from app.js for event handling 
+
+## TODO
+
+- [x] Remove progress indicator section from index.html (lines 26-32)
+- [x] Remove stats section (Words, Scenes, Genre) from index.html
+- [x] Improve image display component with modern UI/UX design:
+  - High-quality image container with proper aspect ratio
+  - Loading states and smooth transitions
+  - Responsive design for all screen sizes
+  - Modern card-based layout with shadows/elevation
+  - Better typography and spacing
+  - Interactive elements (hover effects, download options)
+  - Accessibility improvements
+- [x] Remove "generate variations" and "save project" buttons
+- [x] Connect "regenerate image" and "generate creative image" buttons to API
+- [x] Implement image display functionality in image-placeholder
+- [x] Remove "Use This Scene" button
+- [x] Track scene selection events when user uses "Next Scene" button
+- [x] Connect "Generate Image Prompt" button to generate prompt from selected scene 

@@ -23,13 +23,7 @@
             <div class="tagline">Transform your ideas into illustrated stories with AI</div>
         </div>
 
-        <!-- Progress Indicator -->
-        <div class="progress-indicator">
-            <div class="progress-step completed">1</div>
-            <div class="progress-step completed">2</div>
-            <div class="progress-step completed">3</div>
-            <div class="progress-step active">4</div>
-        </div>
+
 
         <!-- Step 1: Story Input -->
         <div class="section">
@@ -41,7 +35,7 @@
                 <textarea 
                     id="story-prompt"
                     class="prompt-input" 
-                    placeholder="Enter your story idea... (e.g., 'A wizard discovers his magic comes from emotions')">A young apprentice discovers that her magic is powered by the phases of the moon, but during a rare lunar eclipse, she must learn to harness the darkness within herself to save her village from an ancient shadow creature.</textarea>
+                    placeholder="Enter your story idea... (e.g., 'joker assassinates batman (or) spiderman turns into venom (or) Jon Snow becomes the king of the seven kingdoms and sits on the iron throne')"></textarea>
             </div>
             <div id="error-message" class="error-message" style="display: none;"></div>
             <button id="generate-btn" class="btn">
@@ -59,20 +53,7 @@
                 <div class="section-number">2</div>
                 Your Generated Story
             </div>
-            <div class="stats">
-                <div class="stat">
-                    <div class="stat-value">487</div>
-                    <div class="stat-label">Words</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value">5</div>
-                    <div class="stat-label">Scenes</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value">⭐</div>
-                    <div class="stat-label">Fantasy</div>
-                </div>
-            </div>
+
             <div id="story-content" class="story-content">
                 In the mystical village of Lunehaven, where cobblestone streets glowed with embedded moonstone and ivy-covered cottages housed generations of lunar mages, seventeen-year-old Celeste had always been the weakest apprentice. While her peers conjured brilliant silver flames and levitated objects with ease during full moons, Celeste could barely light a candle even when Luna shone brightest.
 
@@ -107,12 +88,10 @@
                     </div>
                     <div class="scene-controls">
                         <button id="next-scene-btn" class="btn btn-secondary">Next Scene</button>
-                        <button id="edit-scene-btn" class="btn btn-secondary">Edit Scene</button>
-                        <button id="use-scene-btn" class="btn">Use This Scene</button>
                     </div>
                 </div>
             </div>
-            <button class="btn">Generate Image Prompt</button>
+            <button id="generate-image-prompt-btn" class="btn">Generate Image Prompt</button>
         </div>
 
         <!-- Step 4: Image Prompt Generation -->
@@ -127,7 +106,6 @@
                     A seventeen-year-old girl with flowing dark hair standing defiantly in a cobblestone village square, her hands raised with dark purple energy swirling around her body mixed with golden threads, creating a luminous protective barrier, massive shadow creature with shifting void-like form looming behind her with writhing tendrils, terrified villagers seeking shelter behind glowing moonstone cottages, dramatic lighting from blood-red eclipse overhead, low angle heroic composition, fantasy art style with rich colors and dynamic energy effects, highly detailed character design, cinematic atmosphere, professional fantasy illustration, 8K quality
                 </div>
                 <div style="margin-top: 1.5rem;">
-                    <button class="btn btn-secondary">Edit Prompt</button>
                     <button id="generate-creative-image-btn" class="btn">Generate Creative Image</button>
                 </div>
             </div>
@@ -139,19 +117,79 @@
                 <div class="section-number">✨</div>
                 Your Masterpiece
             </div>
-            <div class="image-container">
-                <div class="generated-image">
-                    <div class="image-placeholder">
-                        🎨 Your AI-generated illustration will appear here
-                        <br><br>
-                        <small style="opacity: 0.8;">High-resolution artwork based on your story and scene</small>
-                    </div>
+            
+            <!-- High-Quality Image Display Component -->
+            <div class="masterpiece-container">
+                <div class="image-card">
+                    <div class="image-wrapper">
+                        <!-- Loading State -->
+                        <div id="image-loading" class="image-loading" style="display: none;">
+                            <div class="loading-skeleton">
+                                <div class="skeleton-shimmer"></div>
+                            </div>
+                            <div class="loading-text">
+                                <div class="loading-spinner"></div>
+                                <span>Creating your masterpiece...</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Placeholder State -->
+                        <div id="image-placeholder" class="image-placeholder-modern">
+                            <div class="placeholder-icon">🎨</div>
+                            <h3 class="placeholder-title">Your AI Artwork Will Appear Here</h3>
+                            <p class="placeholder-description">High-resolution illustration based on your story and selected scene</p>
+                            <div class="placeholder-features">
+                                <div class="feature">
+                                    <span class="feature-icon">🖼️</span>
+                                    <span>High Resolution</span>
+                                </div>
+                                <div class="feature">
+                                    <span class="feature-icon">🎯</span>
+                                    <span>Scene Accurate</span>
+                                </div>
+                                <div class="feature">
+                                    <span class="feature-icon">✨</span>
+                                    <span>AI Generated</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Actual Image -->
+                        <div id="generated-image-display" class="generated-image-display" style="display: none;">
+                            <img id="masterpiece-image" 
+                                 class="masterpiece-image" 
+                                 alt="AI-generated illustration based on your story"
+                                 loading="lazy">
+                            <div class="image-overlay">
+                                <div class="image-actions">
+                                    <button class="action-btn" id="fullscreen-btn" title="View Fullscreen">
+                                        <span class="action-icon">🔍</span>
+                                    </button>
+                                    <button class="action-btn" id="download-btn" title="Download Image">
+                                        <span class="action-icon">⬇️</span>
+                                    </button>
+                                    <button class="action-btn" id="share-btn" title="Share Image">
+                                        <span class="action-icon">📤</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Error State -->
+                        <div id="image-error" class="image-error" style="display: none;">
+                            <div class="error-icon">⚠️</div>
+                            <h3 class="error-title">Image Generation Failed</h3>
+                            <p class="error-description">Something went wrong while creating your artwork</p>
+                            <button class="btn btn-secondary" id="retry-image-btn">Try Again</button>
+                        </div>
+                
+                <!-- Action Controls -->
+                <div class="masterpiece-controls">
+                    <button id="creative-image-btn" class="btn btn-secondary">
+                        <span class="btn-icon">✨</span>
+                        Generate Creative Image
+                    </button>
                 </div>
-            </div>
-            <div style="text-align: center; margin-top: 2rem;">
-                <button class="btn btn-secondary">Try Different Scene</button>
-                <button class="btn btn-secondary">Regenerate Image</button>
-                <button class="btn">Create New Story</button>
             </div>
         </div>
 
