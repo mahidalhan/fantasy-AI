@@ -7,7 +7,7 @@
     "dev": "live-server --host=localhost --port=3000",
     "build": "npm run minify-css && npm run minify-js",
     "minify-css": "cleancss -o dist/style.min.css css/main.css css/components.css css/animations.css",
-    "minify-js": "uglifyjs js/app.js js/api.js js/ui.js js/utils.js -o dist/app.min.js",
+    "minify-js": "uglifyjs js/app.js js/ui.js js/main.js api.js -o dist/app.min.js",
     "deploy": "npm run build && vercel --prod"
   },
   "keywords": [

@@ -72,3 +72,17 @@
 - [x] Remove "Use This Scene" button
 - [x] Track scene selection events when user uses "Next Scene" button
 - [x] Connect "Generate Image Prompt" button to generate prompt from selected scene 
+
+## TODO: Fix Vercel Deployment Build Error
+
+### IMMEDIATE TASK - DEPLOYMENT FIX 🚨
+
+#### Fix Build Script for Vercel Deployment
+- [ ] Update package.json build script to reference correct files
+  - Current script tries to minify `js/api.js` (deleted) and `js/utils.js` (doesn't exist)
+  - Need to update to use actual files: `js/app.js`, `js/ui.js`, `js/main.js`, and root `api.js`
+- [ ] Test build locally before deployment
+- [ ] Deploy to Vercel successfully
+
+**Error**: `ERROR: ENOENT: no such file or directory, open 'js/api.js'`
+**Root Cause**: Build script references deleted/non-existent files 
