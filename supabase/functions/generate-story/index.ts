@@ -1,5 +1,20 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { corsHeaders } from '../_shared/cors.ts'
+
+// This interface now matches the JSON structure requested from the Gemini API
+interface GeminiStoryResponse {
+  story: string;
+  scenes: Array<{
+    rank: number;
+    scene_description: string;
+    image_gen_prompt: string;
+  }>;
+}
+
+interface RequestBody {
+  prompt: string;
+  style?: string;
+}
 
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY')
 
@@ -112,21 +127,16 @@ Return your response as a JSON object with this exact structure:
 
 Now process this story prompt: {{Story_prompt}}`
 
-serve(async (req) => {
-  // Handle CORS preflight requests
+serve(async (req: Request) => {
+  // Handle CORS
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    // Validate API key
-    if (!GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY environment variable is not set')
-    }
+    // 1. PARSE AND VALIDATE INPUT
+    const { prompt } = await req.json() as RequestBody
 
-    // Parse request body
-    const { prompt } = await req.json()
-    
     if (!prompt || prompt.trim().length === 0) {
       return new Response(
         JSON.stringify({ error: 'Prompt is required' }),
@@ -137,7 +147,6 @@ serve(async (req) => {
       )
     }
 
-    // Validate prompt length
     if (prompt.length > 500) {
       return new Response(
         JSON.stringify({ error: 'Prompt must be 500 characters or less' }),
@@ -147,67 +156,26 @@ serve(async (req) => {
         }
       )
     }
-
-    // Prepare the request payload for Gemini API
-    const geminiPayload = {
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: "spiderman becomes venom" }]
-        },
-        {
-          role: "model",
-          parts: [{
-            text: `\`\`\`json
-{
-  "story": "The bell tower groaned under the strain of the storm. Rain lashed against the stained-glass windows, each pane a fractured reflection of Peter Parker's inner turmoil. He clung to the gargoyle, the cold stone a stark contrast to the burning fever in his veins. He'd ripped the alien symbiote from his body, disgusted by its possessiveness, its hunger. But the city needed Spider-Man. He needed Spider-Man. \\n\\nHe glanced down. New York was a blurred tapestry of lights, sirens wailing in the distance – a symphony of chaos he was sworn to protect. But he felt…weak. Vulnerable. A shard of glass sliced his palm. The crimson droplet smeared on the gargoyle's face, mirroring his own anguish. A familiar tendril snaked out from the shadows, black and slick as oil. The symbiote. It pulsed, a silent promise of power whispered on the wind.\\n\\n\\"Leave me alone!\\" Peter gasped, pulling away. But the symbiote was relentless. It flowed upwards, a living darkness reaching for him, its surface shimmering with iridescent colours under the flickering lightning. It brushed against his skin, and a jolt of raw energy coursed through him. He felt stronger, faster, the exhaustion melting away. But there was something else, a dark thrill, a hunger he hadn't known he possessed.\\n\\nThe symbiote enveloped his hand, crawling up his arm. He tried to fight it, to tear it away, but it was too late. The darkness consumed him, tendrils wrapping around his torso, his legs, his head. He screamed, a sound swallowed by the storm, a plea lost in the thunder's roar. His familiar red and blue suit dissolved, replaced by the sleek, black alien armor. White spider-like veins pulsed across his chest, culminating in a grotesque, grinning maw. \\n\\nHe leaped from the bell tower, landing with a bone-jarring thud on the rain-slicked street. He felt…good. Powerful. The city's chaos no longer seemed like a burden, but an invitation. He grinned, a wide, predatory smile that wasn't his own. \\"We are Venom,\\" he whispered, his voice a guttural growl, a twisted symphony of two minds merging into one. The symbiote surged, urging him forward, its desires now his own. A bank robbery was in progress three blocks away. He could hear the muffled screams, the desperate pleas. A thrill, a dark exhilaration, surged through him. He launched himself into the night, a black silhouette against the stormy sky, the city his hunting ground.\\n\\nThe gargoyle, now stained with rain and a lingering smear of black, stood silent witness to the birth of a monster. The storm raged on, mirroring the darkness that had consumed Spider-Man, a darkness that promised to change the city forever.",
-  "scenes": [
-    {
-      "rank": 5,
-      "scene_description": "Peter, mid-transformation on the bell tower, is screaming as the symbiote consumes him. His classic suit is being replaced with the black venom suit.",
-      "image_gen_prompt": "Peter Parker, mid-transformation into Venom, screaming in agony, black symbiote tendrils engulfing his body, ripping apart the classic red and blue Spider-Man suit, atop a gothic bell tower, stormy night, lightning flashing, dramatic lighting, close-up on Peter's face, highly detailed, professional illustration, masterpiece."
-    },
-    {
-      "rank": 4,
-      "scene_description": "Venom stands on a rain-slicked street, with a menacing grin, the city lights reflected in his eyes.",
-      "image_gen_prompt": "Venom standing on a rain-slicked street, menacing grin revealing sharp teeth, city lights reflecting in his wide, white eyes, black symbiote suit with white spider-like veins, dark alleyway, wet asphalt, neon signs, low angle shot, dramatic lighting, film noir style, highly detailed, professional, masterpiece."
-    },
-    {
-      "rank": 3,
-      "scene_description": "Peter, exhausted and injured, clings to a stone gargoyle on the bell tower before the symbiote arrives.",
-      "image_gen_prompt": "Exhausted and injured Peter Parker clings to a cold, stone gargoyle on a gothic bell tower, rain lashing down, stained-glass windows behind him, bleeding hand, desperate expression, dark and stormy night, flickering lightning, cinematic lighting, medium shot, highly detailed, professional illustration, masterpiece."
-    },
-    {
-      "rank": 2,
-      "scene_description": "The symbiote, a black tendril, reaching towards Peter on the bell tower.",
-      "image_gen_prompt": "A single, black, oily tendril of the symbiote reaching towards Peter Parker on a gothic bell tower, rain falling, stained glass window in the background, dark and ominous atmosphere, glowing iridescent colors on the symbiote's surface, soft lighting, macro lens, highly detailed, professional rendering, masterpiece."
-    },
-    {
-      "rank": 1,
-      "scene_description": "Venom leaps across the city skyline during the storm, heading towards a bank robbery.",
-      "image_gen_prompt": "Venom leaping across the New York City skyline during a raging storm, black silhouette against the stormy sky, white spider emblem glowing, rain and lightning, city lights blurred in the background, dynamic action pose, wide shot, cinematic composition, dark and gritty atmosphere, highly detailed, professional concept art, masterpiece."
+    
+    // 2. PREPARE THE API REQUEST
+    if (!GEMINI_API_KEY) {
+      throw new Error('GEMINI_API_KEY is not set in environment variables.')
     }
-  ]
-}
-\`\`\``
-          }]
-        },
-        {
-          role: "user",
-          parts: [{ text: prompt }]
-        }
-      ],
+    
+    const finalSystemInstruction = SYSTEM_INSTRUCTION.replace(/{{Story_prompt}}/g, prompt)
+
+    const geminiPayload = {
+      contents: [{
+        parts: [{ "text": finalSystemInstruction }]
+      }],
       generationConfig: {
-        responseMimeType: "text/plain"
-      },
-      systemInstruction: {
-        parts: [{ text: SYSTEM_INSTRUCTION }]
+        "response_mime_type": "application/json",
       }
     }
 
-    // Make request to Gemini API
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+    // 3. CALL THE GEMINI API
+    const geminiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: 'POST',
         headers: {
@@ -217,64 +185,49 @@ serve(async (req) => {
       }
     )
 
-    if (!response.ok) {
-      const errorData = await response.text()
-      console.error('Gemini API error:', errorData)
-      throw new Error(`Gemini API request failed: ${response.status}`)
+    if (!geminiResponse.ok) {
+      const errorBody = await geminiResponse.text()
+      console.error('Gemini API Error:', errorBody)
+      throw new Error(`Gemini API request failed with status: ${geminiResponse.status}`)
     }
 
-    const geminiResponse = await response.json()
-    
-    // Extract text from Gemini response
-    const responseText = geminiResponse.candidates?.[0]?.content?.parts?.[0]?.text
+    const responseData = await geminiResponse.json()
+    const responseText = responseData.candidates?.[0]?.content?.parts?.[0]?.text
     
     if (!responseText) {
-      throw new Error('No response text from Gemini API')
+      throw new Error('Received an empty response from Gemini API.')
     }
 
-    // Extract JSON from response (remove markdown code blocks if present)
-    const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/) || 
-                     responseText.match(/```\n([\s\S]*?)\n```/) ||
-                     [null, responseText]
-    
-    const jsonString = jsonMatch[1] || responseText
-    
-    // Parse the JSON response
-    let parsedResponse
-    try {
-      parsedResponse = JSON.parse(jsonString)
-    } catch (parseError) {
-      console.error('JSON parsing error:', parseError)
-      console.error('Raw response:', responseText)
-      throw new Error('Failed to parse response as JSON')
-    }
-
-    // Validate response structure
-    if (!parsedResponse.story || !parsedResponse.scenes || !Array.isArray(parsedResponse.scenes)) {
-      throw new Error('Invalid response structure from Gemini API')
-    }
+    // 4. PARSE AND RETURN THE FINAL JSON
+    const parsedResponse: GeminiStoryResponse = JSON.parse(responseText)
 
     return new Response(
       JSON.stringify({
         success: true,
-        data: parsedResponse
+        data: parsedResponse,
       }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { 
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        } 
       }
     )
 
-  } catch (error) {
-    console.error('Error in generate-story function:', error)
-    
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
+    console.error('Error in generate-story function:', errorMessage)
     return new Response(
       JSON.stringify({ 
-        success: false, 
-        error: error.message || 'Internal server error' 
+        success: false,
+        error: errorMessage 
       }),
       { 
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { 
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        } 
       }
     )
   }

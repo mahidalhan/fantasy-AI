@@ -1,4 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
+// Import from the correct ESM-compatible CDN URL
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 // Initialize Supabase client
 const SUPABASE_URL = 'https://lkvyyfzytojjjaizvner.supabase.co'
@@ -98,29 +99,58 @@ async function generateImagePrompt(story, scene, style) {
 }
 
 /**
- * Generate image from prompt (placeholder for future use)
+ * Generate image from prompt using Gemini 2.0 Flash Image Generation
  * @param {string} prompt - The image generation prompt
- * @param {string} style - Selected art style
- * @returns {Promise<Object>} Response with generated image URL
+ * @param {string} aspectRatio - Image aspect ratio (optional)
+ * @returns {Promise<Object>} Response with generated image data
  */
-async function generateImage(prompt, style) {
+async function generateImage(prompt, aspectRatio = '1:1') {
     try {
-        // TODO: Implement when generate-image edge function is ready
+        console.log('Calling Gemini Image Generation with prompt:', prompt.substring(0, 100) + '...')
+        
+        // Validate input
+        if (!prompt || typeof prompt !== 'string') {
+            throw new Error('Image prompt is required and must be a string')
+        }
+        
+        if (prompt.trim().length === 0) {
+            throw new Error('Image prompt cannot be empty')
+        }
+        
+        if (prompt.length > 1000) {
+            throw new Error('Image prompt must be 1000 characters or less')
+        }
+
+        // Call Supabase Edge Function for image generation
         const { data, error } = await supabase.functions.invoke('generate-image', {
             body: {
-                prompt,
-                style
+                prompt: prompt.trim(),
+                aspectRatio: aspectRatio
             }
         })
 
+        // Handle Supabase function errors
         if (error) {
-            throw new Error(error.message || 'Failed to generate image')
+            console.error('Supabase image generation error:', error)
+            throw new Error(error.message || 'Failed to call image generation function')
         }
 
+        // Log the response for debugging
+        console.log('Image generation response received')
+
+        // The edge function should return structured data
+        // Expected format: { success: true, data: { imageData: string, mimeType: string } }
+        if (!data) {
+            throw new Error('No response data from image generation function')
+        }
+
+        // Return the response as-is since the edge function handles formatting
         return data
         
     } catch (error) {
-        console.error('Error generating image:', error)
+        console.error('Error in generateImage:', error)
+        
+        // Return standardized error response
         return {
             success: false,
             error: error.message || 'Failed to generate image'

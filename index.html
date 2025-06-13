@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StoryCanvas - AI Story & Image Generator</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- StoryCanvas CSS -->
@@ -12,7 +13,7 @@
     <link rel="stylesheet" href="css/animations.css">
     
     <!-- StoryCanvas JavaScript -->
-    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/app.js"></script>
 </head>
 <body>
     <div class="container">
@@ -38,13 +39,16 @@
             </div>
             <div class="input-group">
                 <textarea 
+                    id="story-prompt"
                     class="prompt-input" 
                     placeholder="Enter your story idea... (e.g., 'A wizard discovers his magic comes from emotions')">A young apprentice discovers that her magic is powered by the phases of the moon, but during a rare lunar eclipse, she must learn to harness the darkness within herself to save her village from an ancient shadow creature.</textarea>
             </div>
-            <button class="btn">
-                <span class="loading">
+            <div id="error-message" class="error-message" style="display: none;"></div>
+            <button id="generate-btn" class="btn">
+                <span id="btn-text">Generate</span>
+                <span id="loading-spinner" class="loading" style="display: none;">
                     <span class="spinner"></span>
-                    Generated
+                    Generating...
                 </span>
             </button>
         </div>
@@ -69,7 +73,7 @@
                     <div class="stat-label">Fantasy</div>
                 </div>
             </div>
-            <div class="story-content">
+            <div id="story-content" class="story-content">
                 In the mystical village of Lunehaven, where cobblestone streets glowed with embedded moonstone and ivy-covered cottages housed generations of lunar mages, seventeen-year-old Celeste had always been the weakest apprentice. While her peers conjured brilliant silver flames and levitated objects with ease during full moons, Celeste could barely light a candle even when Luna shone brightest.
 
                 Master Theron, the village's eldest moon-caller, watched with growing concern as Celeste struggled through another lesson. "Your magic flows differently, child," he said, his weathered hands tracing protective runes in the air. "Perhaps the moon speaks to you in whispers rather than songs."
@@ -86,7 +90,7 @@
 
                 As the eclipse ended and normal moonlight returned to Lunehaven, Celeste stood victorious but forever changed. She had saved her village and discovered her true calling—not as a lunar mage, but as a guardian of the balance between light and shadow, protector of the spaces in between.
             </div>
-            <button class="btn">Generate Creative Scene</button>
+            <button id="generate-creative-scene-btn" class="btn">Generate Creative Scene</button>
         </div>
 
         <!-- Step 3: Scene Selection -->
@@ -102,9 +106,9 @@
                         Celeste stands in the village square with her hands raised, dark purple energy swirling with threads of gold spiraling around her, creating a protective barrier against the massive Umbral Devourer whose form shifts between solid darkness and writhing void, its shadow tendrils reaching toward terrified villagers behind her.
                     </div>
                     <div class="scene-controls">
-                        <button class="btn btn-secondary">Next Scene</button>
-                        <button class="btn btn-secondary">Edit Scene</button>
-                        <button class="btn">Use This Scene</button>
+                        <button id="next-scene-btn" class="btn btn-secondary">Next Scene</button>
+                        <button id="edit-scene-btn" class="btn btn-secondary">Edit Scene</button>
+                        <button id="use-scene-btn" class="btn">Use This Scene</button>
                     </div>
                 </div>
             </div>
@@ -124,7 +128,7 @@
                 </div>
                 <div style="margin-top: 1.5rem;">
                     <button class="btn btn-secondary">Edit Prompt</button>
-                    <button class="btn">Generate Creative Image</button>
+                    <button id="generate-creative-image-btn" class="btn">Generate Creative Image</button>
                 </div>
             </div>
         </div>
