@@ -15,6 +15,7 @@ use Rest API principles
 
 please always before executing tasks- use chain of thought reaoning to do make a task list in TODO.md and then start executing, and after completing the tasks, update the TODO.md
 
+please use the note column in TODO.md to write down additional data of the tasks executed, systems architcted, which might be necessary as context for further development
 
 
 

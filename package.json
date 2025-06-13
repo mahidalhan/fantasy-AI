@@ -6,9 +6,11 @@
   "scripts": {
     "dev": "live-server --host=localhost --port=3000",
     "build": "npm run minify-css && npm run minify-js",
+    "build-for-vercel": "npm run minify-css && npm run minify-js && npm run copy-files",
     "minify-css": "cleancss -o dist/style.min.css css/main.css css/components.css css/animations.css",
     "minify-js": "uglifyjs js/app.js js/ui.js js/main.js api.js -o dist/app.min.js",
-    "deploy": "npm run build && vercel --prod"
+    "copy-files": "cp index.html dist/ && cp -r assets dist/ && mkdir -p dist/css && mkdir -p dist/js && cp css/* dist/css/ && cp js/* dist/js/ && cp api.js dist/",
+    "deploy": "npm run build-for-vercel && vercel --prod"
   },
   "keywords": [
     "ai",
